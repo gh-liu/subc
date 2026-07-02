@@ -1,0 +1,76 @@
+{
+  "outbounds": [
+    {{- $first := true -}}
+    {{- range . }}
+      {{- if eq .Protocol "ss" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "shadowsocks",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "method": {{ .Method | json }},
+          "password": {{ .Password | json }}
+        }
+      {{- else if eq .Protocol "trojan" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "trojan",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "password": {{ .Password | json }}{{ template "tls" .Params }}
+        }
+      {{- else if eq .Protocol "vless" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "vless",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "uuid": {{ .UUID | json }}{{ template "tls" .Params }}
+        }
+      {{- else if eq .Protocol "hysteria2" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "hysteria2",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "password": {{ .Password | json }}{{ template "tls" .Params }}
+        }
+      {{- else if eq .Protocol "anytls" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "anytls",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "password": {{ .Password | json }}{{ template "tls" .Params }}
+        }
+      {{- end -}}
+    {{- end }}
+  ]
+}
+
+{{- define "tls" -}}
+  {{- $serverName := or (index . "sni") (index . "peer") -}}
+  {{- if or $serverName (index . "tls") (index . "allowInsecure") (index . "insecure") -}}
+    ,
+    "tls": {
+      "enabled": true
+      {{- if $serverName }},
+      "server_name": {{ $serverName | json }}
+      {{- end }}
+      {{- if or (eq (index . "allowInsecure") "1") (eq (index . "insecure") "1") }},
+      "insecure": true
+      {{- end }}
+      {{- if index . "fp" }},
+      "utls": {
+        "enabled": true,
+        "fingerprint": {{ index . "fp" | json }}
+      }
+      {{- end }}
+    }
+  {{- end -}}
+{{- end -}}
