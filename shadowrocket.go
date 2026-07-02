@@ -26,8 +26,8 @@ func (ShadowrocketClient) Parse(r io.Reader) ([]Node, error) {
 	return parseShadowrocket(string(body))
 }
 
-// ParseShadowrocket parses a Shadowrocket subscription body. It accepts
-// base64-wrapped multi-line URI lists and plain multi-line URI lists.
+// parseShadowrocket parses a Shadowrocket subscription body. It accepts
+// base64-wrapped line-oriented URI lists and plain line-oriented URI lists.
 func parseShadowrocket(content string) ([]Node, error) {
 	content = strings.TrimSpace(content)
 	if content == "" {
