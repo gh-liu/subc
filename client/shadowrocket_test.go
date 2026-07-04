@@ -1,11 +1,11 @@
-package subc
+package client
 
 import "testing"
 
 func TestParseSkipsSubscriptionStatusLines(t *testing.T) {
 	content := "STATUS=🚀:49.39GB,↓:94.59GB,TOT:200GB⚡Expires:2026-10-09\nss://YWVzLTI1Ni1nY206cGFzc0BleGFtcGxlLmNvbToxMjM0#SS%20Node"
 
-	nodes, err := parseShadowrocket(content)
+	nodes, err := ParseShadowrocket(content)
 	if err != nil {
 		t.Fatalf("Parse returned error: %v", err)
 	}
@@ -20,7 +20,7 @@ func TestParseSkipsSubscriptionStatusLines(t *testing.T) {
 func TestParseShadowrocketSplitsByLineNotWhitespace(t *testing.T) {
 	content := "unknown://example.com#Name With Spaces\nss://YWVzLTI1Ni1nY206cGFzc0BleGFtcGxlLmNvbToxMjM0#SS%20Node"
 
-	nodes, err := parseShadowrocket(content)
+	nodes, err := ParseShadowrocket(content)
 	if err != nil {
 		t.Fatalf("Parse returned error: %v", err)
 	}

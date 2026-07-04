@@ -5,11 +5,12 @@ import (
 	"strings"
 	"testing"
 
+	subclient "github.com/gh-liu/subc/client"
 	builtintemplate "github.com/gh-liu/subc/template"
 )
 
 func TestRenderBuiltinTemplateSingbox(t *testing.T) {
-	nodes, err := parseShadowrocket("ss://YWVzLTI1Ni1nY206cGFzc0BleGFtcGxlLmNvbToxMjM0#SS%20Node")
+	nodes, err := subclient.ParseShadowrocket("ss://YWVzLTI1Ni1nY206cGFzc0BleGFtcGxlLmNvbToxMjM0#SS%20Node")
 	if err != nil {
 		t.Fatalf("parseShadowrocket returned error: %v", err)
 	}

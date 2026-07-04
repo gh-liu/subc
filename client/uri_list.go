@@ -1,4 +1,4 @@
-package subc
+package client
 
 import (
 	"io"
@@ -8,27 +8,27 @@ import (
 	"github.com/gh-liu/subc/protocol"
 )
 
-const DefaultUserAgent = "Shadowrocket"
+type URIListClient struct {
+	UserAgent string
+}
 
-// ShadowrocketClient requests and parses Shadowrocket-compatible subscriptions.
-type ShadowrocketClient struct{}
-
-func (ShadowrocketClient) PrepareRequest(req *http.Request) {
-	req.Header.Set("User-Agent", DefaultUserAgent)
+func (c URIListClient) PrepareRequest(req *http.Request) {
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
 	req.Header.Set("Accept", "*/*")
 }
 
-func (ShadowrocketClient) Parse(r io.Reader) ([]Node, error) {
+func (URIListClient) Parse(r io.Reader) ([]protocol.Node, error) {
 	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	return parseShadowrocket(string(body))
+	return ParseURIListSubscription(string(body))
 }
 
-// parseShadowrocket parses a Shadowrocket subscription body. It accepts
-// base64-wrapped line-oriented URI lists and plain line-oriented URI lists.
-func parseShadowrocket(content string) ([]Node, error) {
+// ParseURIListSubscription parses a base64-wrapped or plain line-oriented URI list.
+func ParseURIListSubscription(content string) ([]protocol.Node, error) {
 	content = strings.TrimSpace(content)
 	if content == "" {
 		return nil, nil
@@ -37,7 +37,7 @@ func parseShadowrocket(content string) ([]Node, error) {
 		content = decoded
 	}
 
-	var nodes []Node
+	var nodes []protocol.Node
 	for _, line := range strings.Split(content, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
