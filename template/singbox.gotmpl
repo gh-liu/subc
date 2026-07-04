@@ -48,6 +48,16 @@
           "server_port": {{ .Port }},
           "password": {{ .Password | json }}{{ template "tls" .Params }}
         }
+      {{- else if eq .Protocol "tuic" -}}
+        {{- if not $first }},{{ end }}{{ $first = false }}
+        {
+          "type": "tuic",
+          "tag": {{ .NodeName | json }},
+          "server": {{ .Host | json }},
+          "server_port": {{ .Port }},
+          "uuid": {{ .UUID | json }},
+          "password": {{ .Password | json }}{{ template "tls" .Params }}{{ template "tuic" .Params }}
+        }
       {{- end -}}
     {{- end }}
   ]
@@ -73,4 +83,13 @@
       {{- end }}
     }
   {{- end -}}
+{{- end -}}
+
+{{- define "tuic" -}}
+  {{- if index . "congestion_control" }},
+  "congestion_control": {{ index . "congestion_control" | json }}
+  {{- end }}
+  {{- if index . "udp_relay_mode" }},
+  "udp_relay_mode": {{ index . "udp_relay_mode" | json }}
+  {{- end }}
 {{- end -}}

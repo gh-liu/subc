@@ -11,6 +11,9 @@ func parseUserInfo(raw, protocolName string) (Base, string, string, int, map[str
 		return Base{}, "", "", 0, nil, err
 	}
 	userinfo := u.User.Username()
+	if password, ok := u.User.Password(); ok {
+		userinfo += ":" + password
+	}
 	hostport := u.Host
 	if decoded, ok := decodeBase64Text(u.Host); ok && strings.Contains(decoded, "@") {
 		userinfo, hostport, _ = strings.Cut(decoded, "@")
