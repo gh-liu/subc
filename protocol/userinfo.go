@@ -25,5 +25,9 @@ func parseUserInfo(raw, protocolName string) (Base, string, string, int, map[str
 			params[key] = values[0]
 		}
 	}
-	return Base{Type: protocolName, Name: fragmentName(u), Raw: raw}, userinfo, host, port, params, nil
+	name := fragmentName(u)
+	if name == "" {
+		name = params["remark"]
+	}
+	return Base{Type: protocolName, Name: name, Raw: raw}, userinfo, host, port, params, nil
 }

@@ -32,4 +32,7 @@ func TestParseVLESSWithBase64Authority(t *testing.T) {
 	if n.Params["sni"] != "hk4e-launcher-static.hoyoverse.com" || n.Params["remark"] != "🇭🇰Hong Kong 03" {
 		t.Fatalf("unexpected vless params: %+v", n.Params)
 	}
+	if n.NodeName() != "🇭🇰Hong Kong 03" {
+		t.Fatalf("unexpected vless node name: %q", n.NodeName())
+	}
 }
