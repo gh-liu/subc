@@ -34,7 +34,7 @@ func TestRenderBuiltinTemplateSingbox(t *testing.T) {
 }
 
 func TestRenderBuiltinTemplateSingboxVLESSReality(t *testing.T) {
-	nodes, err := subclient.ParseShadowrocket("vless://YXV0bzo2ZjBmNjdkYi1kZjdlLTQ3ZDktYjQ0Ny1hMjMyZTQ0MzNiNTNAaGszLm1peWF6b25vLWthb3JpLmNvbTo0NDM=?tfo=1&remark=%F0%9F%87%AD%F0%9F%87%B0Hong%20Kong%2003&tls=1&xtls=2&sni=hk4e-launcher-static.hoyoverse.com&pbk=zV4Sja0iajpdzkR1iBMbI7RRWL2nlpgwGOtirQSG-zc&sid=b81edf7fdee4&fp=chrome")
+	nodes, err := subclient.ParseShadowrocket("vless://YXV0bzo2ZjBmNjdkYi1kZjdlLTQ3ZDktYjQ0Ny1hMjMyZTQ0MzNiNTNAaGszLm1peWF6b25vLWthb3JpLmNvbTo0NDM=?tfo=1&remark=%F0%9F%87%AD%F0%9F%87%B0Hong%20Kong%2003&tls=1&xtls=2&flow=xtls-rprx-vision&sni=hk4e-launcher-static.hoyoverse.com&pbk=zV4Sja0iajpdzkR1iBMbI7RRWL2nlpgwGOtirQSG-zc&sid=b81edf7fdee4&fp=chrome")
 	if err != nil {
 		t.Fatalf("parseShadowrocket returned error: %v", err)
 	}
@@ -49,6 +49,9 @@ func TestRenderBuiltinTemplateSingboxVLESSReality(t *testing.T) {
 	}
 	outbounds := decoded["outbounds"].([]any)
 	ob := outbounds[0].(map[string]any)
+	if ob["flow"] != "xtls-rprx-vision" {
+		t.Fatalf("unexpected flow: %+v", ob)
+	}
 	tls := ob["tls"].(map[string]any)
 	reality := tls["reality"].(map[string]any)
 	if reality["enabled"] != true || reality["public_key"] != "zV4Sja0iajpdzkR1iBMbI7RRWL2nlpgwGOtirQSG-zc" || reality["short_id"] != "b81edf7fdee4" {
