@@ -65,7 +65,7 @@
 
 {{- define "tls" -}}
   {{- $serverName := or (index . "sni") (index . "peer") -}}
-  {{- if or $serverName (index . "tls") (index . "allowInsecure") (index . "insecure") -}}
+  {{- if or $serverName (index . "tls") (index . "xtls") (index . "security") (index . "pbk") (index . "allowInsecure") (index . "insecure") -}}
     ,
     "tls": {
       "enabled": true
@@ -79,6 +79,15 @@
       "utls": {
         "enabled": true,
         "fingerprint": {{ index . "fp" | json }}
+      }
+      {{- end }}
+      {{- if index . "pbk" }},
+      "reality": {
+        "enabled": true,
+        "public_key": {{ index . "pbk" | json }}
+        {{- if index . "sid" }},
+        "short_id": {{ index . "sid" | json }}
+        {{- end }}
       }
       {{- end }}
     }
