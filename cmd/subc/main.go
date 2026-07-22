@@ -19,7 +19,7 @@ func main() {
 	builtinTemplate := flag.String("T", "", "built-in template name used to render parsed nodes")
 	flag.Parse()
 	if flag.NArg() != 1 || validateTemplateFlags(*templatePath, *builtinTemplate) != nil {
-		fmt.Fprintf(os.Stderr, "usage: %s [-c shadowrocket|v2ray] [-t template.gotmpl|-T singbox] <subscription-url>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s [-c shadowrocket|v2ray] [-t template.gotmpl|-T mihomo|singbox] <subscription-url>\n", os.Args[0])
 		os.Exit(2)
 	}
 	client, err := subclient.Get(*clientName)

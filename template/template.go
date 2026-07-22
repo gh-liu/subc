@@ -12,6 +12,7 @@ import (
 var templates embed.FS
 
 var files = map[string]string{
+	"mihomo":  "mihomo.gotmpl",
 	"singbox": "singbox.gotmpl",
 }
 

@@ -1,0 +1,164 @@
+{{- $first := true -}}
+proxies:
+  {{- range . }}
+    {{- if eq .Protocol "ss" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: ss
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    cipher: {{ .Method | json }}
+    password: {{ .Password | json }}
+    udp: true
+    {{- else if eq .Protocol "ssr" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: ssr
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    cipher: {{ .Method | json }}
+    password: {{ .Password | json }}
+    protocol: {{ index .Params "protocol" | json }}
+    obfs: {{ index .Params "obfs" | json }}
+      {{- if index .Params "protoparam" }}
+    protocol-param: {{ index .Params "protoparam" | json }}
+      {{- end }}
+      {{- if index .Params "obfsparam" }}
+    obfs-param: {{ index .Params "obfsparam" | json }}
+      {{- end }}
+    udp: true
+    {{- else if eq .Protocol "vmess" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: vmess
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    uuid: {{ .UUID | json }}
+    alterId: {{ or (index .Params "aid") "0" }}
+    cipher: {{ or (index .Params "scy") "auto" | json }}
+    udp: true{{ template "mihomo-transport" .Params }}{{ template "mihomo-tls" .Params }}
+    {{- else if eq .Protocol "vless" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: vless
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    uuid: {{ .UUID | json }}
+    udp: true
+    encryption: ""{{ template "mihomo-vless" .Params }}{{ template "mihomo-transport" .Params }}{{ template "mihomo-tls" .Params }}
+    {{- else if eq .Protocol "trojan" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: trojan
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    password: {{ .Password | json }}
+    udp: true{{ template "mihomo-transport" .Params }}{{ template "mihomo-tls-options" .Params }}{{ template "mihomo-reality" .Params }}
+    {{- else if eq .Protocol "hysteria2" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: hysteria2
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    password: {{ .Password | json }}{{ template "mihomo-quic-tls" .Params }}
+      {{- if index .Params "obfs" }}
+    obfs: {{ index .Params "obfs" | json }}
+      {{- end }}
+      {{- if index .Params "obfs-password" }}
+    obfs-password: {{ index .Params "obfs-password" | json }}
+      {{- end }}
+    {{- else if eq .Protocol "anytls" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: anytls
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    password: {{ .Password | json }}
+    udp: true{{ template "mihomo-quic-tls" .Params }}
+    {{- else if eq .Protocol "tuic" }}
+      {{- $first = false }}
+  - name: {{ .NodeName | json }}
+    type: tuic
+    server: {{ .Host | json }}
+    port: {{ .Port }}
+    uuid: {{ .UUID | json }}
+    password: {{ .Password | json }}{{ template "mihomo-quic-tls" .Params }}
+      {{- if index .Params "congestion_control" }}
+    congestion-controller: {{ index .Params "congestion_control" | json }}
+      {{- end }}
+      {{- if index .Params "udp_relay_mode" }}
+    udp-relay-mode: {{ index .Params "udp_relay_mode" | json }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- if $first }} []{{ end }}
+
+{{- define "mihomo-vless" }}
+  {{- $flow := index . "flow" }}
+  {{- if and (not $flow) (eq (index . "xtls") "2") }}
+    {{- $flow = "xtls-rprx-vision" }}
+  {{- end }}
+  {{- if $flow }}
+    flow: {{ $flow | json }}
+  {{- end }}
+{{- end }}
+
+{{- define "mihomo-transport" }}
+  {{- $network := or (index . "net") (index . "type") }}
+  {{- if and $network (ne $network "none") }}
+    network: {{ $network | json }}
+    {{- if eq $network "ws" }}
+    ws-opts:
+      path: {{ or (index . "path") "/" | json }}
+      {{- if index . "host" }}
+      headers:
+        Host: {{ index . "host" | json }}
+      {{- end }}
+    {{- else if eq $network "grpc" }}
+    grpc-opts:
+      grpc-service-name: {{ or (index . "serviceName") (index . "service-name") "" | json }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- define "mihomo-tls" }}
+  {{- if or (index . "tls") (index . "xtls") (eq (index . "security") "tls") (eq (index . "security") "reality") (index . "pbk") }}
+    tls: true{{ template "mihomo-tls-options" . }}{{ template "mihomo-reality" . }}
+  {{- end }}
+{{- end }}
+
+{{- define "mihomo-tls-options" }}
+  {{- $serverName := or (index . "sni") (index . "peer") }}
+  {{- if $serverName }}
+    servername: {{ $serverName | json }}
+  {{- end }}
+  {{- if index . "fp" }}
+    client-fingerprint: {{ index . "fp" | json }}
+  {{- end }}
+  {{- if or (eq (index . "allowInsecure") "1") (eq (index . "allowInsecure") "true") (eq (index . "insecure") "1") (eq (index . "insecure") "true") }}
+    skip-cert-verify: true
+  {{- end }}
+{{- end }}
+
+{{- define "mihomo-reality" }}
+  {{- if index . "pbk" }}
+    reality-opts:
+      public-key: {{ index . "pbk" | json }}
+    {{- if index . "sid" }}
+      short-id: {{ index . "sid" | json }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- define "mihomo-quic-tls" }}
+  {{- $serverName := or (index . "sni") (index . "peer") }}
+  {{- if $serverName }}
+    sni: {{ $serverName | json }}
+  {{- end }}
+  {{- if index . "fp" }}
+    client-fingerprint: {{ index . "fp" | json }}
+  {{- end }}
+  {{- if or (eq (index . "allowInsecure") "1") (eq (index . "allowInsecure") "true") (eq (index . "insecure") "1") (eq (index . "insecure") "true") }}
+    skip-cert-verify: true
+  {{- end }}
+{{- end }}
