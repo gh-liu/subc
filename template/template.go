@@ -5,15 +5,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
+	"strings"
 	"text/template"
 )
 
 //go:embed *.gotmpl
 var templates embed.FS
 
-var files = map[string]string{
-	"mihomo":  "mihomo.gotmpl",
-	"singbox": "singbox.gotmpl",
+const suffix = ".gotmpl"
+
+func Names() []string {
+	paths, err := fs.Glob(templates, "*"+suffix)
+	if err != nil {
+		panic(err)
+	}
+	names := make([]string, len(paths))
+	for i, path := range paths {
+		names[i] = strings.TrimSuffix(path, suffix)
+	}
+	return names
 }
 
 func Render(w io.Writer, source string, data any) error {
@@ -25,11 +36,17 @@ func Render(w io.Writer, source string, data any) error {
 }
 
 func RenderBuiltin(w io.Writer, name string, data any) error {
-	path, ok := files[name]
-	if !ok {
+	found := false
+	for _, builtin := range Names() {
+		if builtin == name {
+			found = true
+			break
+		}
+	}
+	if !found {
 		return fmt.Errorf("unknown built-in template %q", name)
 	}
-	source, err := templates.ReadFile(path)
+	source, err := templates.ReadFile(name + suffix)
 	if err != nil {
 		return err
 	}
